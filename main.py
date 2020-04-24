@@ -2,9 +2,8 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from telegram import ParseMode
-from telegram.error import Conflict
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ParseMode, Update, Message
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from handlers.register import register_participant
 from handlers.setoran import validate_setoran
@@ -22,15 +21,15 @@ Selamat datang di grup odalf special ramadan 1441H\!
 Berikut adalah command yang bisa dijalankan:
 
 *Daftar Anggota Baru*
-$ odoj daftar _nama penuh_
-Contoh: odoj daftar fawwaz
+$ odalf daftar _nama penuh_
+Contoh: odalf daftar fawwaz
 
 *Setoran*
-$ odoj lapor _nama penuh_ juz _1\-30_ _A\-B_
-Contoh: odoj lapor fawwaz juz 1 A
+$ odalf lapor _nama penuh_ juz _1\-30_ _A\-B_
+Contoh: odalf lapor fawwaz juz 1 A
 
 *Lihat Progress*
-$ odoj list
+$ odalf list
 """
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text=text,
@@ -45,18 +44,21 @@ def greet(update, context):
         welcome(context.bot, chat_id, user.full_name)
 
 
-def echo(update, context):
+def echo(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     if chat_id != GROUP_CHAT_ID:
         return
 
     bot = context.bot
-    message = update.message
+    message: Message = update.message
     message_string: str = message.text.lower()
 
     # check if message is in 'setoran format'
     if message_string.startswith('odalf lapor ') and (' juz ' in message_string):
         validate_setoran(message_string, bot, chat_id, message.message_id)
+    elif message_string.startswith('odoj'):
+        bot.send_message(chat_id=chat_id, text='Tukar \'odoj\' dengan \'odalf\'.',
+                         reply_to_message_id=message.message_id)
     elif message_string.startswith('odalf list'):
         display_setoran(bot, chat_id)
     elif message_string.startswith('odalf daftar'):
@@ -73,7 +75,6 @@ logging.basicConfig(format='%(asctime)s  %(name)s - %(levelname)s - %(message)s'
 dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
 dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, echo))
-
 
 # # handling Conflicts
 # def error_callback(update, context):
