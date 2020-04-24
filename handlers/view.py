@@ -1,27 +1,51 @@
-from telegram import Bot, ParseMode
+import datetime as dt
+import locale
 
-from database.database import get_participants, get_latest_setoran
+from hijri_converter import convert as hijri_convert
+from telegram import Bot, ParseMode, Chat
+
+from database.database import get_participants
+
+locale.setlocale(locale.LC_TIME, 'id_ID')
 
 
-def display_setoran(bot: Bot, chat_id):
+def display_setoran(bot: Bot, chat: Chat):
     participants = get_participants()
+    now = dt.datetime.utcnow() + dt.timedelta(hours=7)
+    today_hijri = hijri_convert.Gregorian.fromdate(now.date()).to_hijri()
+    masehi_str = now.strftime('%d %B %Y')
+    hijri_str = f'{today_hijri.day + 1 if now.time().hour >= 18 else today_hijri.day} {today_hijri.month_name()} {today_hijri.year}H'
 
-    final_text = """o  ⁠⁠⁠بِسْـــــــــمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ    o
-    *LAPORAN KHATAM QUR'AN RAMADHAN 1441H*
-    
-    """
-    for i in range(len(participants)):
-        id = participants[i][0]
-        full_name = participants[i][1].capitalize()
-        completed_half_juz = participants[i][2]
+    final_text = f"""o  ⁠⁠⁠بِسْـــــــــمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ    o
 
-        juz_no, juz_part = get_latest_setoran(id)
+📊📊📊📊📊📊📊📊📊📊
+*LAPORAN {chat.title}*
 
-        final_text += f"""{i + 1}. {full_name} """
+Periode: 
+{masehi_str} \/ *{hijri_str}*
 
-        if juz_no > 0:
-            final_text += f"""Juz {juz_no} {juz_part.upper()}"""
+"""
+    for participant in participants:
+        full_name: str = participant['full_name'].capitalize()
+        half_juz_completed = participant['half_juz_completed']
+        latest_juz_no = participant['latest_juz_no']
+        latest_juz_part = participant['latest_juz_part']
 
-        final_text += f"""\nTotal kholas: {completed_half_juz}\n\n"""
+        final_text += f"👨 📖 {half_juz_completed} \| "
+        final_text += f"{full_name} "
 
-    bot.send_message(chat_id=chat_id, text=final_text, parse_mode=ParseMode.MARKDOWN_V2)
+        if latest_juz_no > 0:
+            final_text += f"\(Juz {latest_juz_no} {latest_juz_part.upper()}\)"
+
+        final_text += "\n"
+
+    final_text += f"""
+\(penomoran sesuai jumlah kholas\)
+
+📖 \= Jumlah kholas 1/2 juz
+
+*Keep istiqomah\!*
+Komunitas One Day One Juz
+"""
+
+    bot.send_message(chat_id=chat.id, text=final_text, parse_mode=ParseMode.MARKDOWN_V2)

@@ -26,14 +26,21 @@ def get_participants() -> list:
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-        SELECT id, full_name, half_juz_completed FROM participant ORDER BY half_juz_completed DESC
+        SELECT id, full_name, half_juz_completed, latest_juz_no, latest_juz_part
+        FROM participant ORDER BY half_juz_completed DESC
     """
     cursor.execute(query)
     result = cursor.fetchall()
 
     participants = []
     for row in result:
-        participants.append((row[0], row[1], row[2]))
+        participants.append({
+            'id': row[0],
+            'full_name': row[1],
+            'half_juz_completed': row[2],
+            'latest_juz_no': row[3],
+            'latest_juz_part': row[4],
+        })
 
     return participants
 

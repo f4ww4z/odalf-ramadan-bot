@@ -2,7 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from telegram import ParseMode, Update, Message, Bot
+from telegram import ParseMode, Update, Message, Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from handlers.register import register_participant
@@ -12,6 +12,8 @@ from handlers.welcome import welcome
 
 load_dotenv(verbose=True)
 
+APP_NAME = "odalf-ramadan-bot"
+TOKEN = os.environ.get('TOKEN')
 GROUP_CHAT_ID = int(os.environ['RAMADAN_GROUP_CHAT_ID'])
 
 
@@ -45,8 +47,8 @@ def greet(update, context):
 
 
 def on_message(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
-    if chat_id != GROUP_CHAT_ID:
+    chat: Chat = update.effective_chat
+    if chat.id != GROUP_CHAT_ID:
         return
 
     bot: Bot = context.bot
@@ -55,16 +57,16 @@ def on_message(update: Update, context: CallbackContext):
 
     # check if message is in 'setoran format'
     if message_string.startswith('odalf lapor ') and (' juz ' in message_string):
-        validate_setoran(message_string, bot, chat_id, message.message_id)
+        validate_setoran(message_string, bot, chat.id, message.message_id)
     elif message_string.startswith('odoj'):
-        bot.send_message(chat_id=chat_id, text='Tukar \'odoj\' dengan \'odalf\'.',
+        bot.send_message(chat_id=chat.id, text='Tukar \'odoj\' dengan \'odalf\'.',
                          reply_to_message_id=message.message_id)
     elif message_string.startswith('odalf list'):
-        display_setoran(bot, chat_id)
+        display_setoran(bot, chat)
     elif message_string.startswith('odalf daftar'):
         full_name = message_string.split('odalf daftar')[1].strip()
 
-        register_participant(bot, chat_id, message.message_id, full_name)
+        register_participant(bot, chat.id, message.message_id, full_name)
 
 
 updater = Updater(token=os.environ['TOKEN'], use_context=True)
@@ -76,20 +78,9 @@ dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
 dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, on_message))
 
-# # handling Conflicts
-# def error_callback(update, context):
-#     try:
-#         raise context.error
-#     except Conflict:
-#         global updater, dispatcher
-#         updater = Updater(token=os.environ['TOKEN'], use_context=True)
-#         dispatcher = updater.dispatcher
-#         updater.start_polling()
-#         updater.idle()
-#
-#
-# dispatcher.add_error_handler(error_callback)
-
-print('Started Odalf Bot. Listening for messages...')
-updater.start_polling()
+# print('Started Odalf Bot. Listening for messages...')
+updater.start_webhook(listen="0.0.0.0",
+                      port=os.environ.get('PORT', 8443),
+                      url_path=TOKEN)
+updater.bot.set_webhook(f"https://{APP_NAME}.herokuapp.com/{TOKEN}")
 updater.idle()

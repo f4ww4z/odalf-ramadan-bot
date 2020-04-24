@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-while true; do
+python main.py
+
+#while true; do
 #  echo "Restarting bot server..."
-  timeout 5 python main.py
-done
+#  timeout 5 python main.py
+#done
