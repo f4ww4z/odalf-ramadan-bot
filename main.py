@@ -14,7 +14,9 @@ load_dotenv(verbose=True)
 
 APP_NAME = "odalf-ramadan-bot"
 TOKEN = os.environ.get('TOKEN')
+PORT = os.environ.get('PORT', 8443)
 GROUP_CHAT_ID = int(os.environ['RAMADAN_GROUP_CHAT_ID'])
+DEBUG = os.environ.get('DEBUG', '') != ''
 
 
 def help(update, context):
@@ -69,18 +71,22 @@ def on_message(update: Update, context: CallbackContext):
         register_participant(bot, chat.id, message.message_id, full_name)
 
 
-updater = Updater(token=os.environ['TOKEN'], use_context=True)
-dispatcher = updater.dispatcher
-logging.basicConfig(format='%(asctime)s  %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+if __name__ == '__main__':
+    updater = Updater(token=TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
+    logging.basicConfig(format='%(asctime)s  %(name)s - %(levelname)s - %(message)s',
+                        level=logging.INFO)
 
-dispatcher.add_handler(CommandHandler('help', help))
-dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
-dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, on_message))
+    dispatcher.add_handler(CommandHandler('help', help))
+    dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
+    dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, on_message))
 
-# print('Started Odalf Bot. Listening for messages...')
-updater.start_webhook(listen="0.0.0.0",
-                      port=os.environ.get('PORT', 8443),
-                      url_path=TOKEN)
-updater.bot.set_webhook(f"https://{APP_NAME}.herokuapp.com/{TOKEN}")
-updater.idle()
+    if DEBUG:
+        print('Started Odalf Bot. Listening for messages...')
+        updater.start_polling()
+    else:
+        updater.start_webhook(listen="0.0.0.0",
+                              port=int(PORT),
+                              url_path=TOKEN)
+        updater.bot.set_webhook(f"https://{APP_NAME}.herokuapp.com/{TOKEN}")
+    updater.idle()
