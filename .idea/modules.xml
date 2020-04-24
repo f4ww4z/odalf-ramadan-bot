@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ODOJRamadanBot.iml" filepath="$PROJECT_DIR$/.idea/ODOJRamadanBot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/odalf-ramadan-bot.iml" filepath="$PROJECT_DIR$/.idea/ODOJRamadanBot.iml" />
     </modules>
   </component>
 </project>
