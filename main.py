@@ -20,8 +20,9 @@ DEBUG = os.environ.get('DEBUG', '') != ''
 
 
 def help(update, context):
-    text = """
-Selamat datang di grup odalf special ramadan 1441H\!
+    chat = update.effective_chat
+    text = f"""
+Selamat datang di grup {chat.title}\.
 Berikut adalah command yang bisa dijalankan:
 
 *Daftar Anggota Baru*
@@ -45,7 +46,7 @@ def greet(update, context):
     new_chat_members = update.message.new_chat_members
     for user in new_chat_members:
         # Another user joined the chat
-        welcome(context.bot, chat_id, user.full_name)
+        welcome(context.bot, chat_id, user.first_name)
 
 
 def on_message(update: Update, context: CallbackContext):
