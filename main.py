@@ -1,9 +1,9 @@
 import logging
 import os
-import time
 
 from dotenv import load_dotenv
 from telegram import ParseMode
+from telegram.error import Conflict
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from handlers.register import register_participant
@@ -74,13 +74,21 @@ dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
 dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, echo))
 
+
+# # handling Conflicts
+# def error_callback(update, context):
+#     try:
+#         raise context.error
+#     except Conflict:
+#         global updater, dispatcher
+#         updater = Updater(token=os.environ['TOKEN'], use_context=True)
+#         dispatcher = updater.dispatcher
+#         updater.start_polling()
+#         updater.idle()
+#
+#
+# dispatcher.add_error_handler(error_callback)
+
 print('Started Odalf Bot. Listening for messages...')
 updater.start_polling()
-
-# if any error, automatically restart
-while True:
-    if not updater.running:
-        print('Restarted Odalf Bot due to crash. Listening for messages...')
-        updater.start_polling()
-
-    time.sleep(10)
+updater.idle()
