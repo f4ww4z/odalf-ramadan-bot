@@ -2,7 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from telegram import ParseMode, Update, Message
+from telegram import ParseMode, Update, Message, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from handlers.register import register_participant
@@ -44,12 +44,12 @@ def greet(update, context):
         welcome(context.bot, chat_id, user.full_name)
 
 
-def echo(update: Update, context: CallbackContext):
+def on_message(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     if chat_id != GROUP_CHAT_ID:
         return
 
-    bot = context.bot
+    bot: Bot = context.bot
     message: Message = update.message
     message_string: str = message.text.lower()
 
@@ -74,7 +74,7 @@ logging.basicConfig(format='%(asctime)s  %(name)s - %(levelname)s - %(message)s'
 
 dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(MessageHandler(Filters.status_update, greet))
-dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, echo))
+dispatcher.add_handler(MessageHandler(Filters.text & Filters.group, on_message))
 
 # # handling Conflicts
 # def error_callback(update, context):

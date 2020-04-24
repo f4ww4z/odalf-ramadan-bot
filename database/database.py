@@ -53,14 +53,11 @@ def get_latest_setoran(participant_id):
     cursor = conn.cursor()
 
     query = """
-        SELECT juz_no, juz_part FROM setoran WHERE participant_id = %s ORDER BY setoran_date DESC LIMIT 1
+        SELECT latest_juz_no, latest_juz_part FROM participant WHERE id = %s LIMIT 1
     """
     cursor.execute(query, (participant_id,))
     result = cursor.fetchone()
 
-    if result is None:
-        # first time setoran
-        return -1, ''
     return result[0], result[1]
 
 
@@ -115,15 +112,18 @@ def add_setoran(participant_id: int, juz_no: int, juz_part: str) -> bool:
     return count > 0
 
 
-def increase_half_juz_count(participant_id: int) -> int:
+def update_participant_latest_setoran(participant_id: int, juz_no: int, juz_part: str) -> int:
     conn = get_connection()
     cursor = conn.cursor()
 
     query = """
-        UPDATE participant SET half_juz_completed = half_juz_completed + 1
+        UPDATE participant SET
+            half_juz_completed = half_juz_completed + 1,
+            latest_juz_no = %s,
+            latest_juz_part = %s
         WHERE id = %s
     """
-    cursor.execute(query, (participant_id,))
+    cursor.execute(query, (juz_no, juz_part, participant_id))
     conn.commit()
     updated_count = cursor.rowcount
 
