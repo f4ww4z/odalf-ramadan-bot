@@ -27,6 +27,7 @@ Periode:
 """
     for participant in participants:
         full_name: str = participant['full_name'].capitalize()
+        full_name = full_name.replace(".", "\.")
         half_juz_completed = participant['half_juz_completed']
         latest_juz_no = participant['latest_juz_no']
         latest_juz_part = participant['latest_juz_part']
@@ -41,6 +42,8 @@ Periode:
 
     final_text += f"""
 \(urutan sesuai jumlah kholas\)
+
+Jumlah member \= {len(participants)} orang
 
 📖 \= Jumlah kholas 1/2 juz
 📔 \= Jumlah khatam al\-Qur'an
