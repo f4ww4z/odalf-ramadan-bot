@@ -6,7 +6,7 @@ WRONG_SETORAN_FORMAT: str = '❌ Format setoran salah. Yang benar:\n\n' \
                             'Contoh: odalf lapor fawwaz juz 1 A'
 
 
-def perform_setoran(message_string: str, bot, chat_id, message_id):
+def validate_setoran(message_string: str, bot, chat_id, message_id):
     reply = ''
     try:
         nama_dan_juz = message_string.split('odalf lapor ')
@@ -24,25 +24,13 @@ def perform_setoran(message_string: str, bot, chat_id, message_id):
             latest_juz_no, latest_juz_part = get_latest_setoran(participant_id)
             allowed_juz_no, allowed_juz_part = calculate_next_setoran(latest_juz_no,
                                                                       latest_juz_part)
-            if juz_no not in (0, allowed_juz_no) or \
-                    juz_part != allowed_juz_part:
+            if latest_juz_no == 0 and latest_juz_part == 'a':
+                # first time setoran
+                reply = perform_setoran(participant_id, juz_no, juz_part)
+            elif juz_no != allowed_juz_no or juz_part != allowed_juz_part:
                 reply = f'❌ Nomor juz salah. Seharusnya juz {allowed_juz_no} {allowed_juz_part.upper()}'
             else:
-                is_success = add_setoran(participant_id, juz_no, juz_part)
-
-                if not is_success:
-                    reply = WRONG_SETORAN_FORMAT
-                else:
-                    # increase half juz completed count
-                    update_participant_latest_setoran(participant_id, juz_no, juz_part)
-
-                    reply = '✅ Setoran telah dicatat.'
-
-                    # if juz is 30 B, increase khatam count
-                    if juz_no == 30 and juz_part == 'b':
-                        increase_khatam(participant_id)
-
-                        reply = '✅ Setoran telah dicatat. Barakallah, anda baru khatam!'
+                reply = perform_setoran(participant_id, juz_no, juz_part)
 
     except Exception as e:
         print(e)
@@ -51,6 +39,26 @@ def perform_setoran(message_string: str, bot, chat_id, message_id):
     bot.send_message(chat_id=chat_id,
                      text=reply,
                      reply_to_message_id=message_id)
+
+
+def perform_setoran(participant_id: int, juz_no: int, juz_part) -> str:
+    is_success = add_setoran(participant_id, juz_no, juz_part)
+
+    if not is_success:
+        reply = WRONG_SETORAN_FORMAT
+    else:
+        # increase half juz completed count
+        update_participant_latest_setoran(participant_id, juz_no, juz_part)
+
+        reply = '✅ Setoran telah dicatat.'
+
+        # if juz is 30 B, increase khatam count
+        if juz_no == 30 and juz_part == 'b':
+            increase_khatam(participant_id)
+
+            reply = '✅ Setoran telah dicatat. Barakallah, anda baru khatam!'
+
+    return reply
 
 
 def calculate_next_setoran(latest_juz_no, latest_juz_part):
