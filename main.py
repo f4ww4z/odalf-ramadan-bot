@@ -7,7 +7,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 
 from handlers.register import register_participant
 from handlers.setoran import validate_setoran
-from handlers.view import display_setoran
+from handlers.view import display_group_setoran, display_individual_setoran
 from handlers.welcome import welcome
 
 load_dotenv(verbose=True)
@@ -33,8 +33,13 @@ Contoh: odalf daftar fawwaz
 $ odalf lapor _nama penuh_ juz _1\-30_ _A\-B_
 Contoh: odalf lapor fawwaz juz 1 A
 
-*Lihat Progress*
+*Lihat Progress Grup*
 $ odalf list
+
+*Lihat Progress Individu*
+$ odalf list _nama penuh_
+Contoh: odalf list fawwaz
+
 """
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text=text,
@@ -56,7 +61,7 @@ def on_message(update: Update, context: CallbackContext):
 
     bot: Bot = context.bot
     message: Message = update.message
-    message_string: str = message.text.lower()
+    message_string: str = message.text.strip().lower()
 
     # check if message is in 'setoran format'
     if message_string.startswith('odalf lapor'):
@@ -65,7 +70,11 @@ def on_message(update: Update, context: CallbackContext):
         bot.send_message(chat_id=chat.id, text='Tukar \'odoj\' dengan \'odalf\'.',
                          reply_to_message_id=message.message_id)
     elif message_string.startswith('odalf list'):
-        display_setoran(bot, chat)
+        if len(message_string) > len('odalf list '):
+            name = message_string.split('odalf list ')[1].strip()
+            display_individual_setoran(bot, chat, message.message_id, name)
+        else:
+            display_group_setoran(bot, chat)
     elif message_string.startswith('odalf daftar'):
         full_name = message_string.split('odalf daftar')[1].strip()
 

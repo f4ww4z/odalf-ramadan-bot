@@ -22,6 +22,29 @@ def get_connection():
         database=database)
 
 
+def get_participant(full_name: str) -> dict:
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+        SELECT full_name, half_juz_completed, latest_juz_no, latest_juz_part, khatam
+        FROM participant
+        WHERE full_name = %s
+    """
+    cursor.execute(query, (full_name,))
+    result = cursor.fetchone()
+
+    if result is None:
+        return {}
+
+    return {
+        'full_name': result[0],
+        'half_juz_completed': result[1],
+        'latest_juz_no': result[2],
+        'latest_juz_part': result[3],
+        'khatam': result[4],
+    }
+
+
 def get_participants() -> list:
     conn = get_connection()
     cursor = conn.cursor()
