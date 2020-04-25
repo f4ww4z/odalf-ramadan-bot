@@ -6,7 +6,7 @@ from telegram import ParseMode, Update, Message, Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from handlers.register import register_participant
-from handlers.setoran import validate_setoran
+from handlers.setoran import perform_setoran
 from handlers.view import display_setoran
 from handlers.welcome import welcome
 
@@ -59,8 +59,8 @@ def on_message(update: Update, context: CallbackContext):
     message_string: str = message.text.lower()
 
     # check if message is in 'setoran format'
-    if message_string.startswith('odalf lapor ') and (' juz ' in message_string):
-        validate_setoran(message_string, bot, chat.id, message.message_id)
+    if message_string.startswith('odalf lapor'):
+        perform_setoran(message_string, bot, chat.id, message.message_id)
     elif message_string.startswith('odoj'):
         bot.send_message(chat_id=chat.id, text='Tukar \'odoj\' dengan \'odalf\'.',
                          reply_to_message_id=message.message_id)

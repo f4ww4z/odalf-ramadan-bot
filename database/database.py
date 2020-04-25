@@ -26,7 +26,7 @@ def get_participants() -> list:
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-        SELECT id, full_name, half_juz_completed, latest_juz_no, latest_juz_part
+        SELECT id, full_name, half_juz_completed, latest_juz_no, latest_juz_part, khatam
         FROM participant ORDER BY half_juz_completed DESC
     """
     cursor.execute(query)
@@ -37,9 +37,10 @@ def get_participants() -> list:
         participants.append({
             'id': row[0],
             'full_name': row[1],
-            'half_juz_completed': row[2],
-            'latest_juz_no': row[3],
+            'half_juz_completed': int(row[2]),
+            'latest_juz_no': int(row[3]),
             'latest_juz_part': row[4],
+            'khatam': int(row[5]),
         })
 
     return participants
@@ -86,20 +87,6 @@ def add_participant(full_name: str) -> int:
 
 
 def add_setoran(participant_id: int, juz_no: int, juz_part: str) -> bool:
-    latest_juz_no, latest_juz_part = get_latest_setoran(participant_id)
-    # check if latest juz is more
-    if latest_juz_no != -1:
-        if juz_no > 30:
-            return False
-
-        if juz_no == latest_juz_no and \
-                (juz_part == latest_juz_part or (juz_part == 'a' and latest_juz_part == 'b')):
-            return False
-
-        if juz_no == (latest_juz_no + 1) % 30 and juz_part == latest_juz_part:
-            # e.g. 28 a 29 a
-            return False
-
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -114,7 +101,7 @@ def add_setoran(participant_id: int, juz_no: int, juz_part: str) -> bool:
     cursor.execute(insert_query, insert_parameters)
     conn.commit()
     count = cursor.rowcount
-    print(count, "Setoran succesfully inserted")
+    print(count, " Setoran succesfully inserted")
 
     return count > 0
 
@@ -134,4 +121,19 @@ def update_participant_latest_setoran(participant_id: int, juz_no: int, juz_part
     conn.commit()
     updated_count = cursor.rowcount
 
+    return updated_count
+
+
+def increase_khatam(participant_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = """
+        UPDATE participant SET
+            khatam = khatam + 1
+        WHERE id = %s
+    """
+    cursor.execute(query, (participant_id,))
+    conn.commit()
+    updated_count = cursor.rowcount
     return updated_count
