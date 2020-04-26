@@ -63,4 +63,6 @@ def perform_setoran(participant_id: int, juz_no: int, juz_part) -> str:
 
 def calculate_next_setoran(latest_juz_no, latest_juz_part):
     allowed_juz_no = latest_juz_no if latest_juz_part == 'a' else (latest_juz_no + 1) % 30
+    if allowed_juz_no == 0:
+        allowed_juz_no = 30
     return allowed_juz_no, 'b' if latest_juz_part == 'a' else 'a'
