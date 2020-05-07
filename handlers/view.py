@@ -41,6 +41,10 @@ Periode:
         latest_juz_part = participant['latest_juz_part']
         khatam = participant['khatam']
 
+        # formatting
+        half_juz_completed = '{:02d}'.format(half_juz_completed)
+        khatam = '{:02d}'.format(khatam)
+
         final_text += f"📔 {khatam} 📖 {half_juz_completed} \| 👨 {full_name} "
 
         if latest_juz_no > 0:
