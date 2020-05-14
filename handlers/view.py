@@ -42,8 +42,8 @@ Periode:
         khatam = participant['khatam']
 
         # formatting
-        half_juz_completed = '{:02d}'.format(half_juz_completed)
         khatam = '{:02d}'.format(khatam)
+        half_juz_completed = '{:03d}'.format(half_juz_completed)
 
         final_text += f"📔 {khatam} 📖 {half_juz_completed} \| 👨 {full_name} "
 

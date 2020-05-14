@@ -63,12 +63,18 @@ def on_message(update: Update, context: CallbackContext):
     message: Message = update.message
     message_string: str = message.text.strip().lower()
 
-    # check if message is in 'setoran format'
+    # check if message is in correct 'setoran format'
     if message_string.startswith('odalf lapor'):
-        validate_setoran(message_string, bot, chat.id, message.message_id)
-    elif message_string.startswith('odoj'):
-        bot.send_message(chat_id=chat.id, text='Tukar \'odoj\' dengan \'odalf\'.',
+        reply_text = validate_setoran(message_string)
+        bot.send_message(chat_id=chat.id,
+                         text=reply_text,
                          reply_to_message_id=message.message_id)
+
+    elif message_string.startswith('odoj'):
+        bot.send_message(chat_id=chat.id,
+                         text='Tukar \'odoj\' dengan \'odalf\'.',
+                         reply_to_message_id=message.message_id)
+
     elif message_string.startswith('odalf list'):
         if len(message_string) > len('odalf list '):
             name = message_string.split('odalf list ')[1].strip()
