@@ -133,14 +133,19 @@ def update_participant_latest_setoran(participant_id: int, juz_no: int, juz_part
     conn = get_connection()
     cursor = conn.cursor()
 
+    half_juz_increment = 2 if juz_part == 'ab' else 1
+
+    if juz_part == 'ab':
+        juz_part = 'b'
+
     query = """
         UPDATE participant SET
-            half_juz_completed = half_juz_completed + 1,
+            half_juz_completed = half_juz_completed + %s,
             latest_juz_no = %s,
             latest_juz_part = %s
         WHERE id = %s
     """
-    cursor.execute(query, (juz_no, juz_part, participant_id))
+    cursor.execute(query, (half_juz_increment, juz_no, juz_part, participant_id))
     conn.commit()
     updated_count = cursor.rowcount
 
