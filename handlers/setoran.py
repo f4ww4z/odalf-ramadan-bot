@@ -1,9 +1,12 @@
 from database.database import get_participant_id_from_name, add_setoran, \
     update_participant_latest_setoran, get_latest_setoran, increase_khatam
 
-WRONG_SETORAN_FORMAT: str = '❌ Format setoran salah. Yang benar:\n\n' \
-                            'odalf lapor <nama penuh> juz <1-30> <A-B>\n' \
-                            'Contoh: odalf lapor fawwaz juz 1 A'
+WRONG_SETORAN_FORMAT: str = """❌ Format setoran salah. Yang benar:
+
+odalf lapor <nama penuh> juz <1-30> <A-B>
+Contoh: odalf lapor fawwaz juz 1 A
+Contoh 1 juz: odalf lapor fawwaz juz 1 AB
+"""
 
 
 def validate_setoran(message_string: str) -> str:
@@ -21,14 +24,14 @@ def validate_setoran(message_string: str) -> str:
 
         # check latest setoran first
         latest_juz_no, latest_juz_part = get_latest_setoran(participant_id)
-        allowed_juz_no, allowed_juz_part = calculate_next_setoran(latest_juz_no,
-                                                                  latest_juz_part)
+        allowed_juz_no, allowed_juz_parts = calculate_next_setoran(latest_juz_no,
+                                                                   latest_juz_part)
         if latest_juz_no == 0 and latest_juz_part == 'a':
             # first time setoran
             return perform_setoran(participant_id, juz_no, juz_part)
 
-        if juz_no != allowed_juz_no or juz_part != allowed_juz_part:
-            return f'❌ Nomor juz salah. Seharusnya juz {allowed_juz_no} {allowed_juz_part.upper()}'
+        if juz_no != allowed_juz_no or juz_part not in allowed_juz_parts:
+            return f'❌ Nomor juz salah. Seharusnya juz {allowed_juz_no} {allowed_juz_parts.upper()}'
 
         return perform_setoran(participant_id, juz_no, juz_part)
 
@@ -59,4 +62,14 @@ def calculate_next_setoran(latest_juz_no, latest_juz_part):
     allowed_juz_no = latest_juz_no if latest_juz_part == 'a' else (latest_juz_no + 1) % 30
     if allowed_juz_no == 0:
         allowed_juz_no = 30
-    return allowed_juz_no, 'b' if latest_juz_part == 'a' else 'a'
+
+    allowed_juz_parts = []
+
+    if latest_juz_part == 'a':
+        allowed_juz_parts.append('b')
+    else:
+        # latest_juz_part is 'b'
+        allowed_juz_parts.append('a')
+        allowed_juz_parts.append('ab')
+
+    return allowed_juz_no, allowed_juz_parts

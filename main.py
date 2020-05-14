@@ -32,6 +32,7 @@ Contoh: odalf daftar fawwaz
 *Setoran*
 $ odalf lapor _nama penuh_ juz _1\-30_ _A\-B_
 Contoh: odalf lapor fawwaz juz 1 A
+Contoh 1 juz: odalf lapor fawwaz juz 1 AB
 
 *Lihat Progress Grup*
 $ odalf list
